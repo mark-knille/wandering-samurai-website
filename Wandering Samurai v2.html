@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wandering Samurai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Shippori+Mincho:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0807;
+  --bg-2:#13100e;
+  --bg-3:#1c1715;
+  --line:#2a2320;
+  --line-2:#3a302b;
+  --ink:#f4ece1;
+  --ink-2:#cdc2b3;
+  --ink-3:#8a8278;
+  --ink-4:#564f48;
+  --ember:#c9362a;        /* deep crimson */
+  --ember-glow:#e94b3a;
+  --gold:#c9a86b;         /* aged brass for accents */
+  --display:'Shippori Mincho', 'Cormorant Garamond', serif;
+  --serif:'Cormorant Garamond', serif;
+  --sans:'Space Grotesk', system-ui, sans-serif;
+  --mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-weight:300;-webkit-font-smoothing:antialiased}
+body{
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,54,42,.08), transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201,54,42,.04), transparent 60%),
+    var(--bg);
+  overflow-x:hidden;
+}
+/* film grain everywhere */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.18 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  opacity:.5;mix-blend-mode:overlay;
+}
+img,svg{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;background:none;border:none;color:inherit}
+a{color:inherit;text-decoration:none}
+
+/* ====== Type ====== */
+.h-display{font-family:var(--display);font-weight:600;letter-spacing:.005em;line-height:.92}
+.h-serif{font-family:var(--serif);font-weight:500;letter-spacing:.005em}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-3);font-weight:400}
+.lead{font-family:var(--serif);font-style:italic;color:var(--ink-2);font-size:20px;line-height:1.4;font-weight:400}
+.body{color:var(--ink-2);font-size:15px;line-height:1.7;font-weight:300}
+.kanji{font-family:var(--display);}
+
+/* ====== Image placeholder (no AI slop drawings) ====== */
+.ph{
+  position:relative;overflow:hidden;background:var(--bg-2);
+  border:1px solid var(--line);
+}
+.ph::before{
+  content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(135deg, rgba(244,236,225,.025) 0 1px, transparent 1px 14px),
+    radial-gradient(ellipse at 30% 70%, rgba(201,54,42,.18), transparent 60%),
+    radial-gradient(ellipse at 70% 30%, rgba(244,236,225,.05), transparent 60%),
+    linear-gradient(180deg, #181311 0%, #0c0a09 100%);
+}
+.ph::after{
+  content:attr(data-tag);position:absolute;left:14px;top:14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  color:rgba(244,236,225,.45);text-transform:uppercase;
+  border:1px solid rgba(244,236,225,.2);
+  padding:3px 8px;
+}
+.ph .ph-mid{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+  color:rgba(244,236,225,.4);text-transform:uppercase;text-align:center;
+  z-index:2;
+}
+.ph .ph-frame{
+  position:absolute;inset:18px;border:1px dashed rgba(244,236,225,.12);
+  pointer-events:none;
+}
+.ph.video::after{content:"▶  " attr(data-tag);}
+.ph .play-btn{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(201,54,42,.85);
+  display:flex;align-items:center;justify-content:center;
+  z-index:3;color:var(--ink);font-size:18px;
+  box-shadow:0 0 0 1px rgba(244,236,225,.2), 0 0 40px rgba(201,54,42,.5);
+}
+.ph .play-btn::before{content:"▶";margin-left:3px}
+
+/* ====== Buttons ====== */
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  padding:16px 24px;border:1px solid var(--line-2);color:var(--ink);
+  background:transparent;transition:all .25s ease;
+  position:relative;
+}
+.btn::before{
+  content:"";position:absolute;left:0;top:0;width:0;height:100%;
+  background:var(--ember);transition:width .35s ease;z-index:-1;
+}
+.btn:hover::before{width:100%}
+.btn:hover{border-color:var(--ember);color:var(--ink)}
+.btn.primary{background:var(--ember);border-color:var(--ember)}
+.btn.primary::before{background:var(--bg-3)}
+.btn .arrow{font-family:var(--sans);font-size:14px;letter-spacing:0;}
+.btn.ghost{border-color:rgba(244,236,225,.3)}
+
+/* ====== Section frame ====== */
+.section{
+  padding:140px 64px;position:relative;
+  max-width:1640px;margin:0 auto;
+}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;margin-bottom:64px;border-bottom:1px solid var(--line);padding-bottom:28px}
+.section-head .sh-l{display:flex;gap:20px;align-items:baseline}
+.section-head .num{font-family:var(--mono);font-size:12px;color:var(--ember);letter-spacing:.3em}
+.section-head h2{font-size:64px}
+.section-head .kj{font-family:var(--display);color:var(--ink-3);font-size:18px;letter-spacing:.4em;writing-mode:horizontal-tb}
+.section-head .sh-r{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;text-align:right;line-height:1.8}
+
+/* hairline brushstroke divider */
+.brush{
+  height:2px;width:140px;
+  background:linear-gradient(90deg, transparent, var(--ember) 30%, var(--ember) 70%, transparent);
+  opacity:.7;
+}
+
+/* ====== NAV ====== */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:20px 48px;gap:40px;
+  background:linear-gradient(180deg, rgba(10,8,7,.85), rgba(10,8,7,.4) 60%, transparent);
+  backdrop-filter:blur(10px) saturate(120%);
+  -webkit-backdrop-filter:blur(10px) saturate(120%);
+  border-bottom:1px solid rgba(244,236,225,.06);
+}
+.nav .menu{display:flex;gap:36px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase}
+.nav .menu a{color:var(--ink-2);position:relative;padding:6px 0;transition:color .2s}
+.nav .menu a:hover{color:var(--ink)}
+.nav .menu a.active{color:var(--ink)}
+.nav .menu a.active::after{
+  content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--ember);
+}
+.nav .menu.r{justify-content:flex-end;align-items:center}
+.nav .logo{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:.04em;
+}
+.nav .logo .mark{
+  width:36px;height:36px;border:1px solid var(--ember);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);color:var(--ember);font-size:18px;
+  position:relative;
+}
+.nav .logo .mark::after{
+  content:"";position:absolute;inset:-3px;border:1px solid rgba(201,54,42,.25);
+}
+.nav .icons{display:flex;gap:14px;margin-left:24px}
+.nav .icons span{
+  width:28px;height:28px;border:1px solid var(--line-2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--ink-3);
+}
+.nav .lang{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);
+  border-left:1px solid var(--line);padding-left:18px;margin-left:6px;
+}
+
+/* ====== HERO ====== */
+.hero{
+  position:relative;height:100vh;min-height:780px;overflow:hidden;
+  display:grid;grid-template-columns:1fr;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    url("assets/hero.png") center/cover no-repeat,
+    linear-gradient(180deg,#0a0807,#150806);
+  animation:hero-drift 28s ease-in-out infinite alternate;
+  transform-origin:center;
+}
+@keyframes hero-drift{
+  0%{transform:scale(1.06) translate(0,0)}
+  100%{transform:scale(1.10) translate(-1.5%, -1%)}
+}
+.hero-vignette{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(10,8,7,.85), transparent 60%),
+    radial-gradient(ellipse 100% 80% at 50% -10%, rgba(10,8,7,.55), transparent 60%),
+    radial-gradient(ellipse 120% 100% at 50% 50%, transparent 40%, rgba(10,8,7,.4) 80%, rgba(10,8,7,.85) 100%);
+}
+.hero-emberglow{
+  position:absolute;top:8%;right:10%;width:34vw;height:34vw;max-width:520px;max-height:520px;z-index:1;
+  border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle, rgba(233,75,58,.45) 0%, rgba(201,54,42,.18) 35%, transparent 65%);
+  filter:blur(20px);
+  animation:ember-pulse 4.5s ease-in-out infinite;
+  mix-blend-mode:screen;
+}
+@keyframes ember-pulse{
+  0%,100%{opacity:.55;transform:scale(1)}
+  50%{opacity:.95;transform:scale(1.06)}
+}
+.hero-flash{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse 60% 30% at 30% 30%, rgba(244,236,225,.3), transparent 70%);
+  opacity:0;
+  animation:flash 11s ease-in-out infinite;
+}
+@keyframes flash{
+  0%,4%,100%{opacity:0}
+  1%{opacity:.18}
+  2%{opacity:0}
+  2.5%{opacity:.32}
+  3.5%{opacity:0}
+}
+.hero-embers{
+  position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;
+}
+.hero-embers span{
+  position:absolute;bottom:-10px;width:3px;height:3px;border-radius:50%;
+  background:#e94b3a;box-shadow:0 0 8px #e94b3a, 0 0 16px rgba(201,54,42,.6);
+  opacity:0;
+  animation:ember-rise linear infinite;
+}
+@keyframes ember-rise{
+  0%{transform:translate(0,0) scale(.7);opacity:0}
+  10%{opacity:.9}
+  100%{transform:translate(var(--dx,20px), -110vh) scale(.3);opacity:0}
+}
+.hero-rain{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background-image:repeating-linear-gradient(80deg,
+    rgba(244,236,225,.10) 0 1px, transparent 1px 7px);
+  opacity:.18;
+  animation:rain 6s linear infinite;
+}
+@keyframes rain{from{transform:translate(0,0)}to{transform:translate(-40px,80px)}}
+.hero-fog{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 35% at 20% 85%, rgba(244,236,225,.18), transparent 70%),
+    radial-gradient(ellipse 60% 25% at 70% 75%, rgba(244,236,225,.10), transparent 70%);
+  filter:blur(28px);
+  mix-blend-mode:screen;opacity:.7;
+  animation:fog-drift 24s ease-in-out infinite alternate;
+}
+@keyframes fog-drift{
+  0%{transform:translate(-2%, 0)}
+  100%{transform:translate(3%, -1%)}
+}
+
+/* scan line over the image — game-engine vibe */
+.hero-scan{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg, rgba(244,236,225,.025) 0 1px, transparent 1px 3px);
+  mix-blend-mode:overlay;opacity:.4;
+}
+
+/* vertical kanji column */
+.hero-vert{
+  position:absolute;right:48px;top:50%;transform:translateY(-50%);z-index:3;
+  writing-mode:vertical-rl;text-orientation:upright;
+  font-family:var(--display);font-size:14px;letter-spacing:.4em;
+  color:rgba(244,236,225,.55);
+  border-left:1px solid rgba(244,236,225,.15);
+  padding-left:14px;height:60%;
+  display:flex;align-items:center;
+}
+
+/* hero content */
+.hero-content{
+  position:relative;z-index:4;align-self:end;
+  padding:0 64px 100px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:end;
+  width:100%;
+}
+.hero-tl .pretitle{
+  display:flex;align-items:center;gap:14px;margin-bottom:32px;
+}
+.hero-tl .pretitle .line{flex:0 0 60px;height:1px;background:var(--ember)}
+.hero-tl .pretitle span{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--ember);text-transform:uppercase}
+.hero-tl h1{
+  font-family:var(--display);font-weight:600;font-size:clamp(64px, 9vw, 144px);
+  line-height:.88;letter-spacing:-.005em;
+  background:linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-tl h1 .kj{
+  display:block;font-size:.36em;color:var(--ember);
+  -webkit-text-fill-color:var(--ember);
+  letter-spacing:.5em;margin-top:18px;font-weight:500;
+}
+.hero-br{
+  align-self:end;text-align:right;
+  display:flex;flex-direction:column;align-items:flex-end;gap:28px;
+}
+.hero-br .tag{
+  font-family:var(--serif);font-style:italic;font-size:22px;line-height:1.4;
+  color:var(--ink-2);max-width:380px;
+}
+.hero-br .ctas{display:flex;gap:14px}
+
+/* hero footer strip */
+.hero-foot{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:32px;
+  padding:18px 64px;
+  border-top:1px solid rgba(244,236,225,.08);
+  background:linear-gradient(0deg, rgba(10,8,7,.7), transparent);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;
+}
+.hero-foot .scroll{display:flex;align-items:center;gap:10px}
+.hero-foot .scroll .ln{width:28px;height:1px;background:var(--ink-3);position:relative;overflow:hidden}
+.hero-foot .scroll .ln::after{
+  content:"";position:absolute;left:-100%;top:0;width:50%;height:100%;background:var(--ember);
+  animation:scroll-ln 2s ease-in-out infinite;
+}
+@keyframes scroll-ln{0%{left:-50%}100%{left:100%}}
+.hero-foot .platforms{display:flex;gap:24px;justify-content:center}
+.hero-foot .release{color:var(--ink);font-weight:500}
+.hero-foot .release b{color:var(--ember);font-weight:500}
+
+/* ====== STORY ====== */
+.story{
+  display:grid;grid-template-columns:1.05fr .95fr;gap:96px;align-items:center;
+  position:relative;
+}
+.story .story-img{
+  height:680px;position:relative;overflow:hidden;
+  border:1px solid var(--line);
+}
+.story-art{
+  position:absolute;inset:0;
+  background:url("assets/story.png") center/cover no-repeat;
+  animation:story-drift 22s ease-in-out infinite alternate;
+  transform-origin:65% 50%;
+}
+@keyframes story-drift{
+  0%{transform:scale(1.04) translate(0,0)}
+  100%{transform:scale(1.10) translate(-2%, -1.5%)}
+}
+.story-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(10,8,7,.7), transparent 60%),
+    radial-gradient(ellipse 60% 90% at 0% 50%, transparent 30%, rgba(10,8,7,.45) 90%),
+    linear-gradient(180deg, rgba(10,8,7,.45) 0%, transparent 35%);
+}
+.story-fog{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.55;
+  background:
+    radial-gradient(ellipse 60% 30% at 25% 70%, rgba(244,236,225,.18), transparent 70%),
+    radial-gradient(ellipse 50% 25% at 70% 80%, rgba(244,236,225,.12), transparent 70%);
+  filter:blur(24px);
+  animation:story-fog-drift 20s ease-in-out infinite alternate;
+}
+@keyframes story-fog-drift{
+  0%{transform:translate(0,0)}
+  100%{transform:translate(4%, -2%)}
+}
+.story-lantern{
+  position:absolute;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(233,75,58,.6), rgba(201,54,42,.18) 50%, transparent 75%);
+  filter:blur(8px);mix-blend-mode:screen;pointer-events:none;
+  animation:lantern-flicker 3.2s ease-in-out infinite;
+}
+.story-lantern.l1{ top:36%; left:46%; width:80px; height:80px; animation-delay:0s; }
+.story-lantern.l2{ top:38%; left:65%; width:64px; height:64px; animation-delay:.7s; }
+@keyframes lantern-flicker{
+  0%,100%{opacity:.7;transform:scale(1)}
+  20%{opacity:.45;transform:scale(.96)}
+  35%{opacity:.85;transform:scale(1.03)}
+  60%{opacity:.55;transform:scale(.98)}
+  80%{opacity:.78;transform:scale(1.02)}
+}
+.story-leaves{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.story-leaves span{
+  position:absolute;top:-20px;width:8px;height:10px;
+  background:linear-gradient(135deg, #b94234, #6b1f1a);
+  border-radius:60% 0 60% 0;
+  opacity:0;
+  animation:leaf-fall linear infinite;
+  filter:drop-shadow(0 0 4px rgba(0,0,0,.5));
+}
+@keyframes leaf-fall{
+  0%{transform:translate(0,0) rotate(0deg);opacity:0}
+  10%{opacity:.85}
+  100%{transform:translate(var(--dx,-60px), 720px) rotate(540deg);opacity:0}
+}
+.story-grain{
+  position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.18 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.story .story-img .ph{display:none}
+.story .story-img .stamp{
+  position:absolute;left:-32px;top:32px;
+  width:120px;height:120px;border:1px solid var(--ember);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);color:var(--ember);font-size:36px;font-weight:600;
+  background:rgba(10,8,7,.85);transform:rotate(-6deg);
+  box-shadow:0 0 40px rgba(201,54,42,.3);
+}
+.story .story-img .stamp::after{
+  content:"";position:absolute;inset:-6px;border:1px solid rgba(201,54,42,.3);border-radius:50%;
+}
+.story .story-img .ribbon{
+  position:absolute;right:-24px;bottom:48px;
+  background:var(--bg-3);border:1px solid var(--line-2);
+  padding:14px 24px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--ink-2);text-transform:uppercase;
+}
+.story .story-img .ribbon b{color:var(--ember);font-weight:500}
+
+.story .story-tx h3{
+  font-family:var(--display);font-size:88px;line-height:.92;font-weight:600;margin:24px 0 36px;
+}
+.story .story-tx h3 em{font-family:var(--serif);font-style:italic;color:var(--ember);font-weight:500}
+.story .story-tx .body{margin-bottom:18px}
+.story .story-tx .quote{
+  border-left:1px solid var(--ember);padding:6px 0 6px 24px;margin:36px 0;
+  font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink-2);line-height:1.4;
+}
+.story .story-tx .quote cite{
+  display:block;margin-top:14px;font-style:normal;
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--ink-3);text-transform:uppercase;
+}
+
+/* ====== CHARACTERS ====== */
+.chars-wrap{position:relative}
+.chars{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+}
+.char{
+  position:relative;height:560px;overflow:hidden;cursor:pointer;
+  border:1px solid var(--line);
+  transition:transform .5s ease, border-color .3s ease;
+}
+.char:hover{transform:translateY(-6px);border-color:var(--ember)}
+.char .ph{position:absolute;inset:0;border:none}
+.char.kaito .ph,
+.char.hime .ph,
+.char.ono .ph,
+.char.kage .ph{display:none}
+.char.kaito .portrait-img,
+.char.hime .portrait-img,
+.char.ono .portrait-img,
+.char.kage .portrait-img{
+  position:absolute;inset:0;
+  background:url("assets/mori.png") center 18%/cover no-repeat;
+  filter:contrast(1.05) saturate(.9);
+  animation:portrait-breathe 6s ease-in-out infinite;
+  transform-origin:center 30%;
+}
+.char.hime .portrait-img{
+  background-image:url("assets/hime.png");
+  background-position:center 22%;
+}
+.char.ono .portrait-img{
+  background-image:url("assets/ono.png");
+  background-position:center 22%;
+  filter:contrast(1.02) saturate(.75) sepia(.15);
+  animation:portrait-meditate 9s ease-in-out infinite;
+}
+.char.kage .portrait-img{
+  background-image:url("assets/kage.png");
+  background-position:center 18%;
+  filter:contrast(1.12) saturate(.85) brightness(.95);
+  animation:portrait-iron 5.5s ease-in-out infinite;
+  transform-origin:center 35%;
+}
+@keyframes portrait-iron{
+  0%,100%{transform:scale(1.03)}
+  45%{transform:scale(1.07)}
+  50%{transform:scale(1.075) translate(.3%, 0)}
+  55%{transform:scale(1.07)}
+}
+.char.kage .portrait-glow{
+  background:radial-gradient(circle, rgba(201,54,42,.55), rgba(120,20,18,.2) 40%, transparent 70%);
+  animation:kage-pulse 2.8s ease-in-out infinite;
+}
+@keyframes kage-pulse{
+  0%,100%{opacity:.55;transform:scale(1) translateX(-50%)}
+  50%{opacity:1;transform:scale(1.08) translateX(-50%)}
+}
+.char.kage .portrait-flicker{
+  background:linear-gradient(180deg, transparent 30%, rgba(201,54,42,.18) 60%, transparent 80%);
+  animation:portrait-flicker 3.2s ease-in-out infinite;
+}
+.char.kage .portrait-smoke{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.45;
+  background:
+    radial-gradient(ellipse 50% 20% at 30% 95%, rgba(40,30,28,.7), transparent 70%),
+    radial-gradient(ellipse 60% 25% at 70% 90%, rgba(20,12,10,.8), transparent 70%);
+  filter:blur(14px);
+  animation:kage-smoke 8s ease-in-out infinite alternate;
+}
+@keyframes kage-smoke{
+  0%{transform:translate(0,0)}
+  100%{transform:translate(2%, -3%)}
+}
+.char.kage .portrait-eye{
+  position:absolute;top:32%;left:50%;transform:translateX(-50%);
+  width:60%;height:8%;
+  background:radial-gradient(ellipse 40% 80% at 35% 50%, rgba(233,75,58,.55), transparent 70%),
+             radial-gradient(ellipse 40% 80% at 65% 50%, rgba(233,75,58,.55), transparent 70%);
+  filter:blur(2px);mix-blend-mode:screen;pointer-events:none;
+  animation:kage-eyes 4s ease-in-out infinite;
+}
+@keyframes kage-eyes{
+  0%,100%{opacity:.4}
+  35%{opacity:.85}
+  65%{opacity:.55}
+}
+@keyframes portrait-meditate{
+  0%,100%{transform:scale(1.02)}
+  50%{transform:scale(1.05)}
+}
+.char.ono .portrait-glow{
+  background:radial-gradient(circle, rgba(201,168,107,.32), rgba(201,168,107,.10) 50%, transparent 75%);
+  animation:ono-aura 6s ease-in-out infinite;
+}
+@keyframes ono-aura{
+  0%,100%{opacity:.55;transform:scale(1) translateX(-50%)}
+  50%{opacity:.85;transform:scale(1.04) translateX(-50%)}
+}
+.char.ono .portrait-incense{
+  position:absolute;left:50%;bottom:30%;width:2px;height:60%;
+  background:linear-gradient(0deg, transparent, rgba(244,236,225,.25) 30%, rgba(244,236,225,.4) 60%, transparent 100%);
+  filter:blur(3px);mix-blend-mode:screen;pointer-events:none;
+  transform-origin:bottom;
+  animation:incense-sway 7s ease-in-out infinite;
+  opacity:.55;
+}
+@keyframes incense-sway{
+  0%,100%{transform:translateX(-50%) rotate(-3deg) scaleY(1)}
+  50%{transform:translateX(-30%) rotate(4deg) scaleY(1.1)}
+}
+@keyframes portrait-breathe{
+  0%,100%{transform:scale(1.02)}
+  50%{transform:scale(1.06)}
+}
+.char.kaito .portrait-glow{
+  position:absolute;top:8%;left:50%;transform:translateX(-50%);
+  width:70%;height:55%;border-radius:50%;
+  background:radial-gradient(circle, rgba(233,75,58,.35), rgba(201,54,42,.12) 45%, transparent 70%);
+  filter:blur(14px);mix-blend-mode:screen;pointer-events:none;
+  animation:ember-pulse 4s ease-in-out infinite;
+}
+.char.kaito .portrait-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0%, transparent 50%, rgba(10,8,7,.5) 100%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(10,8,7,.95), transparent 70%);
+}
+.char.kaito .portrait-grain{
+  position:absolute;inset:0;pointer-events:none;opacity:.3;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.2 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+.char.kaito .portrait-flicker{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, transparent 30%, rgba(201,54,42,.08) 60%, transparent 80%);
+  mix-blend-mode:overlay;
+  animation:portrait-flicker 5s ease-in-out infinite;
+}
+@keyframes portrait-flicker{
+  0%,100%{opacity:.4}
+  20%{opacity:.7}
+  45%{opacity:.3}
+  70%{opacity:.6}
+}
+.char.kaito:hover .portrait-img,
+.char.hime:hover .portrait-img,
+.char.ono:hover .portrait-img,
+.char.kage:hover .portrait-img{
+  animation-duration:3s;
+  filter:contrast(1.15) saturate(1);
+}
+.char .num{
+  position:absolute;top:18px;left:18px;z-index:3;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ember);
+}
+.char .meta{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;padding:24px;
+  background:linear-gradient(0deg, rgba(10,8,7,.95) 0%, rgba(10,8,7,.7) 60%, transparent 100%);
+}
+.char .meta .role{
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;
+  display:flex;align-items:center;gap:10px;
+}
+.char .meta .role::before{content:"";width:18px;height:1px;background:var(--ember)}
+.char .meta .nm{font-family:var(--display);font-size:32px;font-weight:600;line-height:1;letter-spacing:.005em}
+.char .meta .nm .kj{display:block;font-size:14px;color:var(--ember);letter-spacing:.4em;margin-top:8px;font-weight:500}
+.char .meta .body{font-size:13px;line-height:1.6;color:var(--ink-2);margin-top:14px;max-height:0;opacity:0;transition:all .4s ease;overflow:hidden}
+.char:hover .meta .body{max-height:120px;opacity:1}
+
+/* ====== GAMEPLAY ====== */
+.gameplay{
+  display:grid;grid-template-columns:340px 1fr;gap:48px;
+  border:1px solid var(--line);background:var(--bg-2);
+  padding:48px;position:relative;
+}
+.gameplay::before{
+  /* corner brackets */
+  content:"";position:absolute;top:-1px;left:-1px;width:24px;height:24px;
+  border-top:1px solid var(--ember);border-left:1px solid var(--ember);
+}
+.gameplay::after{
+  content:"";position:absolute;bottom:-1px;right:-1px;width:24px;height:24px;
+  border-bottom:1px solid var(--ember);border-right:1px solid var(--ember);
+}
+.tabs{display:flex;flex-direction:column;gap:0;border-right:1px solid var(--line)}
+.tab{
+  padding:22px 24px 22px 0;border-bottom:1px solid var(--line);
+  display:flex;gap:18px;align-items:center;
+  cursor:pointer;transition:all .3s ease;
+  margin-right:-1px;
+}
+.tab:last-child{border-bottom:none}
+.tab .num{
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.18em;width:24px;
+}
+.tab .info{flex:1}
+.tab .info .name{font-family:var(--display);font-size:22px;font-weight:600;line-height:1;letter-spacing:.005em}
+.tab .info .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.2em;margin-top:6px;text-transform:uppercase}
+.tab .arrow{color:var(--ink-3);font-size:12px;opacity:0;transition:all .3s}
+.tab:hover{padding-right:18px}
+.tab:hover .num{color:var(--ember)}
+.tab.on{border-right:2px solid var(--ember);background:linear-gradient(90deg,transparent,rgba(201,54,42,.06))}
+.tab.on .num{color:var(--ember)}
+.tab.on .arrow{opacity:1;color:var(--ember)}
+.preview{display:flex;flex-direction:column;gap:24px}
+.preview .big{flex:1;height:480px;position:relative}
+.preview .big::after{left:auto !important;right:14px}
+.preview .meta-row{display:grid;grid-template-columns:1fr auto auto auto;gap:24px;align-items:center}
+.preview .meta-row h4{font-family:var(--display);font-size:28px;font-weight:600;line-height:1.1;margin-bottom:8px}
+.preview .meta-row .sub{font-family:var(--serif);font-style:italic;color:var(--ink-2);font-size:16px}
+.stat{display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  padding:14px 18px;border:1px solid var(--line);min-width:90px;
+}
+.stat .v{font-family:var(--display);font-size:24px;color:var(--ember);font-weight:600;line-height:1}
+.stat .l{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--ink-3);text-transform:uppercase}
+
+/* HUD elements on preview */
+.hud{position:absolute;font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:rgba(244,236,225,.85);text-transform:uppercase;z-index:4}
+.hud-tl{top:18px;left:18px;display:flex;flex-direction:column;gap:8px}
+.hud-tl .bar-wrap{display:flex;align-items:center;gap:10px;font-size:9px}
+.hud-tl .bar-bg{width:120px;height:4px;background:rgba(244,236,225,.15);position:relative}
+.hud-tl .bar-fl{position:absolute;left:0;top:0;height:100%;background:var(--ember)}
+.hud-tl .bar-fl.hp{width:72%;background:var(--ember-glow)}
+.hud-tl .bar-fl.st{width:48%;background:var(--gold)}
+.hud-tr{top:54px;right:18px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.hud-br{bottom:18px;right:18px;display:flex;gap:8px}
+.hud-br .pip{border:1px solid rgba(244,236,225,.3);padding:6px 12px;background:rgba(10,8,7,.6);backdrop-filter:blur(6px)}
+.hud-bl{bottom:18px;left:18px;font-family:var(--display);font-size:13px;color:rgba(244,236,225,.65);letter-spacing:.4em}
+
+/* ====== MEDIA RAIL ====== */
+.media-rail{
+  display:flex;gap:18px;overflow-x:auto;padding-bottom:18px;
+  scrollbar-width:thin;scrollbar-color:var(--line-2) transparent;
+}
+.media-rail::-webkit-scrollbar{height:6px}
+.media-rail::-webkit-scrollbar-thumb{background:var(--line-2)}
+.media-tile{flex-shrink:0;width:480px;height:300px;position:relative;cursor:pointer;transition:transform .3s}
+.media-tile:hover{transform:translateY(-4px)}
+.media-tile.wide{width:640px;height:340px}
+.media-tile .info{
+  position:absolute;left:18px;bottom:18px;z-index:3;
+  display:flex;flex-direction:column;gap:6px;
+}
+.media-tile .info .ttl{font-family:var(--display);font-size:18px;font-weight:600}
+.media-tile .info .sub{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.2em;text-transform:uppercase}
+.media-foot{
+  display:flex;justify-content:space-between;align-items:center;margin-top:20px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;
+}
+.media-foot .ctrls{display:flex;gap:10px}
+.media-foot .ctrls button{
+  width:38px;height:38px;border:1px solid var(--line-2);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-2);transition:all .25s;
+}
+.media-foot .ctrls button:hover{border-color:var(--ember);color:var(--ember)}
+
+.media-tile.real-shot{position:relative;overflow:hidden;border:1px solid var(--line-2)}
+.media-tile.real-shot::before{
+  content:"";position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  transition:transform .9s ease, filter .6s ease;
+  filter:contrast(1.05) saturate(.92);
+}
+.media-tile.real-shot::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg, transparent 45%, rgba(8,6,5,.85) 100%),
+    radial-gradient(ellipse at 50% 60%, transparent 50%, rgba(8,6,5,.55) 100%);
+}
+.media-tile.real-shot:hover::before{transform:scale(1.06);filter:contrast(1.12) saturate(1)}
+.media-tile.real-shot.village::before{background-image:url("assets/gameplay-village.png")}
+.media-tile.real-shot.trailer::before{background-image:url("assets/trailer-walk-begins.png");filter:contrast(1.02) saturate(.95)}
+.media-tile.real-shot.trailer::after{
+  background:
+    linear-gradient(180deg, transparent 60%, rgba(8,6,5,.7) 100%),
+    radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(8,6,5,.35) 100%);
+}
+.media-tile.real-shot .info{z-index:3}
+
+/* ====== NEWS ====== */
+.news{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.news-card{
+  border:1px solid var(--line);background:var(--bg-2);
+  display:flex;flex-direction:column;
+  transition:all .3s ease;
+}
+.news-card:hover{border-color:var(--line-2);transform:translateY(-4px)}
+.news-card .thumb{height:240px;position:relative}
+.news-card .body{padding:28px;display:flex;flex-direction:column;gap:14px;flex:1}
+.news-card .tag{
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;
+  color:var(--ember);text-transform:uppercase;
+  display:flex;align-items:center;gap:10px;
+}
+.news-card .tag::after{content:"";flex:1;height:1px;background:var(--line)}
+.news-card .ttl{font-family:var(--display);font-size:24px;font-weight:600;line-height:1.2}
+.news-card .body-t{font-family:var(--serif);color:var(--ink-2);font-size:15px;line-height:1.6;font-style:italic}
+.news-card .meta-row{
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+  color:var(--ink-3);text-transform:uppercase;margin-top:auto;padding-top:18px;border-top:1px solid var(--line);
+}
+
+.news-card .thumb.real-thumb{
+  height:240px;
+  position:relative;
+  overflow:hidden;
+  background-size:cover;
+  background-position:center;
+  border-bottom:1px solid var(--line);
+}
+
+.news-card .thumb.patch{
+  background-image:url("assets/news-patch-12.png");
+}
+
+.news-card .thumb.devlog{
+  background-image:url("assets/news-devlog-008.png");
+}
+
+.news-card .thumb.announcement{
+  background-image:url("assets/news-announcement-q3.png");
+}
+
+/* ====== PRE-ORDER ====== */
+.preorder-hero{
+  position:relative;height:620px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  isolation:isolate;
+  text-align:center;border:1px solid var(--line);
+  background:#0a0807;
+}
+.preorder-hero .po-bg{
+  position:absolute;inset:0;z-index:0;
+  background:url("assets/preorder-bg.png") center/cover no-repeat;
+  filter:contrast(1.05) saturate(.95) brightness(.78);
+  animation:po-drift 18s ease-in-out infinite alternate;
+}
+@keyframes po-drift{
+  0%{transform:scale(1.04) translate(0,0)}
+  100%{transform:scale(1.08) translate(-1%, -1.2%)}
+}
+.preorder-hero .po-aura{
+  position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
+  background:
+    radial-gradient(ellipse 26% 50% at 50% 55%, rgba(233,75,58,.55), rgba(120,20,18,.18) 40%, transparent 65%),
+    radial-gradient(ellipse 16% 32% at 50% 50%, rgba(255,140,110,.45), transparent 70%);
+  animation:po-aura-pulse 2.4s ease-in-out infinite;
+  filter:blur(4px);
+}
+@keyframes po-aura-pulse{
+  0%,100%{opacity:.7;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.07)}
+}
+.preorder-hero .po-aura-flicker{
+  position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(ellipse 22% 45% at 50% 55%, rgba(255,90,70,.4), transparent 60%);
+  animation:po-flick .18s steps(2) infinite;
+  opacity:.6;
+}
+@keyframes po-flick{
+  0%{opacity:.55}50%{opacity:.85}100%{opacity:.55}
+}
+.preorder-hero .po-bolt{
+  position:absolute;top:0;width:3px;height:55%;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg, #fff 0%, rgba(255,240,230,.9) 30%, rgba(233,75,58,.5) 70%, transparent 100%);
+  filter:drop-shadow(0 0 12px rgba(255,255,255,.9)) drop-shadow(0 0 22px rgba(233,75,58,.7)) blur(.4px);
+  opacity:0;mix-blend-mode:screen;
+}
+.preorder-hero .po-bolt.l{left:22%;clip-path:polygon(40% 0,55% 12%,38% 24%,58% 38%,32% 55%,55% 70%,30% 88%,55% 100%,46% 88%,68% 70%,42% 55%,68% 38%,48% 24%,65% 12%,50% 0);animation:po-strike 5.4s ease-out infinite}
+.preorder-hero .po-bolt.r{right:22%;clip-path:polygon(60% 0,45% 14%,62% 26%,42% 40%,68% 56%,45% 72%,70% 90%,45% 100%,54% 88%,32% 70%,58% 56%,32% 40%,52% 26%,35% 14%,50% 0);animation:po-strike 5.4s ease-out infinite;animation-delay:2.7s}
+@keyframes po-strike{
+  0%,8%{opacity:0}
+  9%{opacity:1}
+  10.5%{opacity:.2}
+  11.5%{opacity:1}
+  13%{opacity:0}
+  16%{opacity:.85}
+  18%{opacity:0}
+  100%{opacity:0}
+}
+.preorder-hero .po-flash{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(ellipse at 30% 30%, rgba(220,230,255,.32), transparent 55%);
+  opacity:0;mix-blend-mode:screen;
+  animation:po-flash 5.4s ease-out infinite;
+}
+@keyframes po-flash{
+  0%,8%{opacity:0}
+  9%{opacity:.8}
+  12%{opacity:0}
+  16%{opacity:.55}
+  18%{opacity:0}
+  100%{opacity:0}
+}
+.preorder-hero .po-vignette{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 60%, transparent 35%, rgba(8,6,5,.85) 95%),
+    linear-gradient(180deg, rgba(8,6,5,.55) 0%, transparent 28%, transparent 62%, rgba(8,6,5,.78) 100%);
+}
+.preorder-hero > *:not(.po-bg):not(.po-aura):not(.po-aura-flicker):not(.po-bolt):not(.po-flash):not(.po-vignette):not(.seal){position:relative;z-index:4}
+.preorder-hero .seal{z-index:5}
+.preorder-hero .seal{
+  position:absolute;top:48px;right:48px;
+  width:120px;height:120px;border-radius:50%;
+  border:1px solid var(--ember);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);color:var(--ember);font-weight:600;
+  text-align:center;font-size:13px;line-height:1.2;letter-spacing:.2em;
+  background:rgba(10,8,7,.7);transform:rotate(-8deg);
+  box-shadow:0 0 40px rgba(201,54,42,.4);
+}
+.preorder-hero .seal::after{
+  content:"";position:absolute;inset:-6px;border:1px dashed rgba(201,54,42,.3);border-radius:50%;
+}
+.preorder-hero .ph-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.4em;color:var(--ember);text-transform:uppercase;margin-bottom:24px}
+.preorder-hero h2{font-family:var(--display);font-size:96px;font-weight:600;line-height:.92;margin-bottom:24px}
+.preorder-hero .ph-tag{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink-2);max-width:540px}
+.preorder-hero .platforms{display:flex;gap:18px;margin-top:36px}
+.preorder-hero .pf{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--ink-2);text-transform:uppercase;
+  border:1px solid var(--line-2);padding:12px 20px;
+}
+.editions{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:32px}
+.ed{
+  border:1px solid var(--line);background:var(--bg-2);padding:36px 32px;
+  display:flex;flex-direction:column;gap:18px;position:relative;
+  transition:all .3s ease;
+}
+.ed:hover{border-color:var(--line-2);transform:translateY(-4px)}
+.ed.featured{
+  background:linear-gradient(180deg, rgba(201,54,42,.08), var(--bg-2) 60%);
+  border-color:var(--ember);
+}
+.ed.featured::before{
+  content:"RECOMMENDED";position:absolute;top:-1px;left:-1px;
+  background:var(--ember);color:var(--ink);
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;
+  padding:6px 14px;
+}
+.ed .ed-name{font-family:var(--display);font-size:32px;font-weight:600}
+.ed .ed-jp{font-family:var(--display);font-size:11px;letter-spacing:.4em;color:var(--ember);margin-top:-10px}
+.ed .price{font-family:var(--display);font-size:48px;font-weight:600;line-height:1}
+.ed .price small{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ink-3);font-weight:300;display:block;margin-top:6px;text-transform:uppercase}
+.ed ul{list-style:none;display:flex;flex-direction:column;gap:12px;margin:8px 0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.ed li{font-family:var(--serif);font-size:15px;color:var(--ink-2);padding-left:22px;position:relative;line-height:1.4}
+.ed li::before{content:"";position:absolute;left:0;top:9px;width:10px;height:1px;background:var(--ember)}
+.ed .pick-btn{margin-top:auto}
+
+/* ====== FOOTER ====== */
+.footer{
+  border-top:1px solid var(--line);
+  padding:80px 64px 40px;
+  background:linear-gradient(180deg, var(--bg) 0%, #050302 100%);
+  position:relative;
+}
+.footer-grid{
+  display:grid;grid-template-columns:1.4fr 1fr 1fr 1.4fr;gap:48px;
+  max-width:1640px;margin:0 auto;
+}
+.footer h5{
+  font-family:var(--mono);font-size:11px;letter-spacing:.3em;
+  color:var(--ink-3);margin-bottom:20px;font-weight:400;text-transform:uppercase;
+}
+.footer ul{list-style:none;display:flex;flex-direction:column;gap:12px}
+.footer li a{font-family:var(--serif);font-size:16px;color:var(--ink-2);transition:color .2s}
+.footer li a:hover{color:var(--ember)}
+.footer .studio{
+  margin-top:24px;padding-top:24px;border-top:1px solid var(--line);
+}
+.footer .studio .mark{
+  display:flex;align-items:center;gap:14px;margin-bottom:14px;
+}
+.footer .studio .mark .glyph{
+  width:42px;height:42px;border:1px solid var(--ember);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);color:var(--ember);font-size:18px;
+}
+.footer .studio .name{font-family:var(--display);font-size:20px;font-weight:600}
+.footer .studio .legal{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--ink-4);text-transform:uppercase;line-height:1.8}
+.footer .news{
+  display:flex;border:1px solid var(--line-2);
+}
+.footer .news input{
+  background:transparent;border:none;outline:none;flex:1;
+  padding:16px 18px;color:var(--ink);
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+}
+.footer .news input::placeholder{color:var(--ink-4);text-transform:uppercase}
+.footer .news button{
+  background:var(--ember);padding:0 22px;color:var(--ink);
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+}
+.footer .socials{display:flex;gap:10px;margin-top:18px}
+.footer .socials span{
+  width:40px;height:40px;border:1px solid var(--line-2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;color:var(--ink-2);transition:all .25s;
+}
+.footer .socials span:hover{border-color:var(--ember);color:var(--ember)}
+
+.footer-bot{
+  max-width:1640px;margin:60px auto 0;padding-top:24px;
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;letter-spacing:.22em;color:var(--ink-4);text-transform:uppercase;
+}
+.footer-bot .rating{display:flex;gap:18px;align-items:center}
+.footer-bot .rating .esrb{
+  border:1px solid var(--line-2);padding:4px 10px;color:var(--ink-3);
+}
+
+/* responsive bits */
+@media (max-width:1280px){
+  .section{padding:100px 40px}
+  .chars{grid-template-columns:repeat(2,1fr)}
+  .news{grid-template-columns:1fr}
+  .editions{grid-template-columns:1fr}
+  .story{grid-template-columns:1fr;gap:48px}
+  .gameplay{grid-template-columns:1fr;padding:32px}
+  .tabs{border-right:none;border-bottom:1px solid var(--line)}
+  .hero-content{grid-template-columns:1fr;gap:24px;padding:0 40px 80px}
+  .hero-br{align-items:flex-start;text-align:left}
+  .nav{padding:16px 24px;grid-template-columns:auto auto;gap:20px}
+  .nav .menu{display:none}
+  .nav .menu.r{display:flex;gap:14px}
+  .nav .icons{display:none}
+  .hero-foot{grid-template-columns:1fr;padding:14px 24px}
+  .preorder-hero h2{font-size:64px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<nav class="nav" data-screen-label="Nav">
+  <div class="menu">
+    <a href="#" class="active">Home</a>
+    <a href="#story">Story</a>
+    <a href="#chars">Characters</a>
+    <a href="#gameplay">Gameplay</a>
+  </div>
+  <div class="logo">
+    <span class="mark">流</span>
+    <span>Wandering Samurai</span>
+  </div>
+  <div class="menu r">
+    <a href="#media">Media</a>
+    <a href="#news">News</a>
+    <a href="#preorder">Pre-Order</a>
+    <span class="icons">
+      <span>X</span><span>D</span><span>Y</span>
+    </span>
+    <span class="lang">EN ⌄</span>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section class="hero" data-screen-label="01 Hero">
+  <div class="hero-bg"></div>
+  <div class="hero-emberglow"></div>
+  <div class="hero-fog"></div>
+  <div class="hero-rain"></div>
+  <div class="hero-scan"></div>
+  <div class="hero-flash"></div>
+  <div class="hero-embers" id="embers"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero-vert">さすらいの侍</div>
+
+  <div class="hero-content">
+    <div class="hero-tl">
+      <div class="pretitle">
+        <span class="line"></span>
+        <span>A new epic · Q3 2026</span>
+      </div>
+      <h1>
+        Wandering<br/>Samurai.
+        <span class="kj">流浪の侍</span>
+      </h1>
+    </div>
+    <div class="hero-br">
+      <div class="tag">"A lone warrior walks the path between honor and vengeance — and the road remembers every blade."</div>
+      <div class="ctas">
+        <button class="btn primary">▶ Watch Trailer <span class="arrow">→</span></button>
+        <button class="btn ghost">Pre-Order <span class="arrow">→</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-foot">
+    <div class="scroll"><span class="ln"></span><span>Scroll</span></div>
+    <div class="platforms"><span>PC · STEAM</span><span>·</span><span>PLAYSTATION 5</span><span>·</span><span>XBOX SERIES X|S</span></div>
+    <div class="release"><b>RELEASE</b> · Q3 · 2026</div>
+    <div>Rated · M · MATURE</div>
+  </div>
+</section>
+
+<!-- ============== STORY ============== -->
+<section class="section" id="story" data-screen-label="02 Story">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">01 / 06</span>
+      <h2 class="h-display">Story</h2>
+      <span class="kj">物語</span>
+    </div>
+    <div class="sh-r">
+      Chapter · I<br/>
+      <span style="color:var(--ember)">— The path of broken honor</span>
+    </div>
+  </div>
+
+  <div class="story">
+    <div class="story-img">
+      <div class="story-art"></div>
+      <div class="story-fog"></div>
+      <div class="story-lantern l1"></div>
+      <div class="story-lantern l2"></div>
+      <div class="story-leaves" id="leaves"></div>
+      <div class="story-grain"></div>
+      <div class="story-vignette"></div>
+      <div class="stamp">義</div>
+      <div class="ribbon"><b>CH · I</b> · The Lone Path</div>
+    </div>
+    <div class="story-tx">
+      <div class="brush"></div>
+      <span class="eyebrow" style="margin-top:18px;display:block;">— Synopsis</span>
+      <h3>Honor is a road,<br/>and his is <em>burning.</em></h3>
+      <p class="body">Once sworn to a daimyō who no longer exists, Kaito Mori walks west with a borrowed name and a katana that won't stay sheathed. Six provinces, three rival clans, and the slow-burning memory of a village where the rain still smells like smoke.</p>
+      <p class="body">Choose vengeance and the world will fear you. Choose honor and it will hollow you. The road remembers either way.</p>
+      <div class="quote">"The blade does not ask the wind which way to fall. It only asks who is left standing."
+        <cite>— Kaito Mori, Ch. III</cite>
+      </div>
+      <button class="btn">Read full story <span class="arrow">→</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CHARACTERS ============== -->
+<section class="section" id="chars" data-screen-label="03 Characters">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">02 / 06</span>
+      <h2 class="h-display">Characters</h2>
+      <span class="kj">人物</span>
+    </div>
+    <div class="sh-r">
+      Four souls · one road<br/>
+      <span style="color:var(--ember)">— Hover to reveal lore</span>
+    </div>
+  </div>
+
+  <div class="chars-wrap">
+    <div class="chars">
+      <div class="char kaito">
+        <div class="portrait-img"></div>
+        <div class="portrait-glow"></div>
+        <div class="portrait-flicker"></div>
+        <div class="portrait-grain"></div>
+        <div class="portrait-vignette"></div>
+        <div class="num">N° 01</div>
+        <div class="meta">
+          <div class="role">Protagonist · Blade</div>
+          <div class="nm">Kaito Mori<span class="kj">森 海斗</span></div>
+          <div class="body">A wandering blade sworn to no banner. Last survivor of the Mori clan. Carries his father's wakizashi at the small of his back.</div>
+        </div>
+      </div>
+      <div class="char hime">
+        <div class="portrait-img"></div>
+        <div class="portrait-glow"></div>
+        <div class="portrait-flicker"></div>
+        <div class="portrait-grain"></div>
+        <div class="portrait-vignette"></div>
+        <div class="num">N° 02</div>
+        <div class="meta">
+          <div class="role">Antagonist · Spy</div>
+          <div class="nm">Ina Hime<span class="kj">姫 イナ</span></div>
+          <div class="body">Mistress of the Black Crane. Walks unseen between courts. Speaks softly because her knife has nothing left to say.</div>
+        </div>
+      </div>
+      <div class="char ono">
+        <div class="portrait-img"></div>
+        <div class="portrait-incense"></div>
+        <div class="portrait-glow"></div>
+        <div class="portrait-flicker"></div>
+        <div class="portrait-grain"></div>
+        <div class="portrait-vignette"></div>
+        <div class="num">N° 03</div>
+        <div class="meta">
+          <div class="role">Ally · Monk</div>
+          <div class="nm">Ryūsei Ono<span class="kj">小野 流星</span></div>
+          <div class="body">A wandering monk who once held a blade. Trades parables for sake and never quite finishes either.</div>
+        </div>
+      </div>
+      <div class="char kage">
+        <div class="portrait-img"></div>
+        <div class="portrait-smoke"></div>
+        <div class="portrait-eye"></div>
+        <div class="portrait-glow"></div>
+        <div class="portrait-flicker"></div>
+        <div class="portrait-grain"></div>
+        <div class="portrait-vignette"></div>
+        <div class="num">N° 04</div>
+        <div class="meta">
+          <div class="role">Rival · Warlord</div>
+          <div class="nm">Tetsuo Kage<span class="kj">影 鉄雄</span></div>
+          <div class="body">Ironclad lord of the Northern Reach. Built his castle on bones and his alliances on debts. The road bends around him.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== GAMEPLAY ============== -->
+<section class="section" id="gameplay" data-screen-label="04 Gameplay">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">03 / 06</span>
+      <h2 class="h-display">Gameplay</h2>
+      <span class="kj">戦</span>
+    </div>
+    <div class="sh-r">
+      Five pillars · one blade<br/>
+      <span style="color:var(--ember)">— Select to preview</span>
+    </div>
+  </div>
+
+  <div class="gameplay">
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-i="0">
+        <div class="num">01</div>
+        <div class="info"><div class="name">Open World</div><div class="sub">Roam Feudal Japan</div></div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="tab" data-i="1">
+        <div class="num">02</div>
+        <div class="info"><div class="name">Katana Combat</div><div class="sub">Parry · iaijutsu · stance</div></div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="tab" data-i="2">
+        <div class="num">03</div>
+        <div class="info"><div class="name">Stealth</div><div class="sub">The way of shadow</div></div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="tab" data-i="3">
+        <div class="num">04</div>
+        <div class="info"><div class="name">Dynamic Weather</div><div class="sub">Storms shape combat</div></div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="tab" data-i="4">
+        <div class="num">05</div>
+        <div class="info"><div class="name">Skill Progression</div><div class="sub">Three blade paths</div></div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+
+    <div class="preview">
+      <div class="big ph video" data-tag="FEATURE PREVIEW · 16:9" id="preview">
+        <div class="ph-frame"></div>
+        <div class="play-btn"></div>
+        <div class="hud hud-tl">
+          <div class="bar-wrap"><span>HP</span><div class="bar-bg"><div class="bar-fl hp"></div></div><span>72</span></div>
+          <div class="bar-wrap"><span>ST</span><div class="bar-bg"><div class="bar-fl st"></div></div><span>48</span></div>
+        </div>
+        <div class="hud hud-bl" id="hud-region">外 · YAMASHIRO PROVINCE</div>
+        <div class="hud hud-br">
+          <span class="pip">◑ STANCE</span>
+          <span class="pip">◇ ENCOUNTER</span>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div>
+          <h4 id="feat-name">Roam a feudal Japan you can actually live in.</h4>
+          <div class="sub" id="feat-sub">Eight provinces. Hand-crafted shrines, hidden valleys, and weather that never stops moving.</div>
+        </div>
+        <div class="stat"><div class="v">120<small style="font-size:14px">+</small></div><div class="l">Hours</div></div>
+        <div class="stat"><div class="v">08</div><div class="l">Regions</div></div>
+        <div class="stat"><div class="v">∞</div><div class="l">Encounters</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== MEDIA ============== -->
+<section class="section" id="media" data-screen-label="05 Media">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">04 / 06</span>
+      <h2 class="h-display">Media</h2>
+      <span class="kj">映像</span>
+    </div>
+    <div class="sh-r">
+      24 entries<br/>
+      <span style="color:var(--ember)">— Drag · scroll · arrow keys</span>
+    </div>
+  </div>
+
+  <div class="media-rail">
+    <div class="media-tile wide real-shot trailer video">
+      <div class="play-btn"></div>
+      <div class="info"><div class="ttl">The Walk Begins</div><div class="sub">Launch Trailer · 2:14</div></div>
+    </div>
+    <div class="media-tile real-shot village">
+      <div class="info"><div class="ttl">Village in Fog</div><div class="sub">Yamashiro Province</div></div>
+    </div>
+    <div class="media-tile ph video" data-tag="GAMEPLAY · 0:48">
+      <div class="ph-frame"></div>
+      <div class="play-btn"></div>
+      <div class="info"><div class="ttl">Combat Preview</div><div class="sub">Katana Stance Demo</div></div>
+    </div>
+    <div class="media-tile ph" data-tag="SCREENSHOT">
+      <div class="ph-frame"></div>
+      <div class="info"><div class="ttl">Duel at Dawn</div><div class="sub">Mountain Pass</div></div>
+    </div>
+    <div class="media-tile ph" data-tag="SCREENSHOT">
+      <div class="ph-frame"></div>
+      <div class="info"><div class="ttl">Night Raid</div><div class="sub">Edo Outskirts</div></div>
+    </div>
+    <div class="media-tile ph video" data-tag="DEV DIARY · 4:30">
+      <div class="ph-frame"></div>
+      <div class="play-btn"></div>
+      <div class="info"><div class="ttl">Building Edo</div><div class="sub">Behind the World</div></div>
+    </div>
+  </div>
+  <div class="media-foot">
+    <span>01 / 24</span>
+    <div class="ctrls">
+      <button>←</button><button>→</button>
+    </div>
+    <span>View Gallery →</span>
+  </div>
+</section>
+
+<!-- ============== NEWS ============== -->
+<section class="section" id="news" data-screen-label="06 News">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">05 / 06</span>
+      <h2 class="h-display">Dispatches</h2>
+      <span class="kj">便り</span>
+    </div>
+    <div class="sh-r">
+      Latest · from the studio<br/>
+      <span style="color:var(--ember)">— View all updates →</span>
+    </div>
+  </div>
+
+  <div class="news">
+    <div class="news-card">
+      <div class="thumb real-thumb patch"></div>
+      <div class="body">
+        <div class="tag">Patch Notes · 1.2</div>
+        <div class="ttl">Combat balancing &amp; new parry windows.</div>
+        <div class="body-t">Tighter iaijutsu reads, two new stance variations, and the long-promised rain physics fix.</div>
+        <div class="meta-row"><span>MAR · 14</span><span>6 MIN READ</span></div>
+      </div>
+    </div>
+    <div class="news-card">
+      <div class="thumb real-thumb devlog"></div>
+      <div class="body">
+        <div class="tag">Dev Log · 008</div>
+        <div class="ttl">How we built the dynamic weather system.</div>
+        <div class="body-t">A look at how three months of simulating Hokkaidō storms taught us to stop fighting the wind.</div>
+        <div class="meta-row"><span>MAR · 02</span><span>12 MIN READ</span></div>
+      </div>
+    </div>
+    <div class="news-card">
+      <div class="thumb real-thumb announcement"></div>
+      <div class="body">
+        <div class="tag">Announcement</div>
+        <div class="ttl">Wandering Samurai launches Q3 · 2026.</div>
+        <div class="body-t">Pre-orders are now open across all platforms. Crow's Feather armor for early walkers.</div>
+        <div class="meta-row"><span>FEB · 21</span><span>4 MIN READ</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PRE-ORDER ============== -->
+<section class="section" id="preorder" data-screen-label="07 Pre-Order">
+  <div class="section-head">
+    <div class="sh-l">
+      <span class="num">06 / 06</span>
+      <h2 class="h-display">Pre-Order</h2>
+      <span class="kj">予約</span>
+    </div>
+    <div class="sh-r">
+      Walk the path<br/>
+      <span style="color:var(--ember)">— Crow's Feather armor included</span>
+    </div>
+  </div>
+
+  <div class="preorder-hero">
+    <div class="po-bg"></div>
+    <div class="po-aura"></div>
+    <div class="po-aura-flicker"></div>
+    <div class="po-bolt l"></div>
+    <div class="po-bolt r"></div>
+    <div class="po-flash"></div>
+    <div class="po-vignette"></div>
+    <div class="seal">PRE<br/>ORDER<br/>·予約·</div>
+    <div class="ph-eyebrow">— Launches Q3 · 2026</div>
+    <h2 class="h-display">Walk the path.</h2>
+    <div class="ph-tag">Pre-order to receive the Crow's Feather armor set, an early-access weekend, and the digital art compendium.</div>
+    <div class="platforms">
+      <div class="pf">PC · STEAM</div>
+      <div class="pf">PLAYSTATION 5</div>
+      <div class="pf">XBOX SERIES X|S</div>
+    </div>
+  </div>
+
+  <div class="editions">
+    <div class="ed">
+      <div class="ed-name">Standard</div>
+      <div class="ed-jp">標 準</div>
+      <div class="price">$69<small>USD · base</small></div>
+      <ul>
+        <li>Base game · all platforms</li>
+        <li>Day-one combat patch</li>
+        <li>Pre-order skin: Wanderer's hood</li>
+      </ul>
+      <button class="btn ghost pick-btn">Choose <span class="arrow">→</span></button>
+    </div>
+    <div class="ed featured">
+      <div class="ed-name">Deluxe</div>
+      <div class="ed-jp">豪 華</div>
+      <div class="price">$89<small>USD · most popular</small></div>
+      <ul>
+        <li>Everything in Standard</li>
+        <li>Season Pass · 2 expansions</li>
+        <li>Digital artbook · OST</li>
+        <li>72-hr early access</li>
+      </ul>
+      <button class="btn primary pick-btn">Choose <span class="arrow">→</span></button>
+    </div>
+    <div class="ed">
+      <div class="ed-name">Collector's</div>
+      <div class="ed-jp">蒐 集</div>
+      <div class="price">$199<small>USD · physical</small></div>
+      <ul>
+        <li>Everything in Deluxe</li>
+        <li>Resin cast statue · 18cm</li>
+        <li>Cloth map · steelbook</li>
+        <li>Numbered certificate</li>
+      </ul>
+      <button class="btn ghost pick-btn">Choose <span class="arrow">→</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="footer" data-screen-label="Footer">
+  <div class="footer-grid">
+    <div>
+      <div class="studio">
+        <div class="mark">
+          <span class="glyph">黒</span>
+          <span class="name">Kurotsuru Games</span>
+        </div>
+        <div class="legal">
+          Independent studio · Kyōto · Vancouver<br/>
+          Fictional · Original design · Not a real company<br/>
+          © 2026 · All rights reserved
+        </div>
+      </div>
+    </div>
+    <div>
+      <h5>Game</h5>
+      <ul>
+        <li><a href="#story">Story</a></li>
+        <li><a href="#chars">Characters</a></li>
+        <li><a href="#gameplay">Gameplay</a></li>
+        <li><a href="#media">Media</a></li>
+        <li><a href="#preorder">Pre-Order</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Studio</h5>
+      <ul>
+        <li><a href="#">About Kurotsuru</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press kit</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Walk with us</h5>
+      <p style="font-family:var(--serif);font-style:italic;color:var(--ink-2);font-size:15px;line-height:1.6;margin-bottom:18px">Dispatches from the road. Patch notes, dev diaries, the occasional ghost story.</p>
+      <div class="news">
+        <input type="email" placeholder="your.email@inbox.jp" />
+        <button>Subscribe</button>
+      </div>
+      <div class="socials">
+        <span>X</span><span>D</span><span>Y</span><span>I</span><span>R</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bot">
+    <span>EN · JP · FR · DE · ES · KR · ZH</span>
+    <div class="rating">
+      <span class="esrb">ESRB · M</span>
+      <span>PEGI · 18</span>
+      <span>Violence · Language · Blood</span>
+    </div>
+    <span>v0.1 · concept</span>
+  </div>
+</footer>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<script>
+  // ember particles
+  (function(){
+    const root = document.getElementById('embers');
+    if (!root) return;
+    const N = 36;
+    for (let i=0;i<N;i++){
+      const e = document.createElement('span');
+      const left = Math.random()*100;
+      const dur = 6 + Math.random()*10;
+      const delay = -Math.random()*dur;
+      const dx = (Math.random()-.5)*120;
+      const size = 1 + Math.random()*2.5;
+      e.style.left = left+'%';
+      e.style.width = e.style.height = size+'px';
+      e.style.animationDuration = dur+'s';
+      e.style.animationDelay = delay+'s';
+      e.style.setProperty('--dx', dx+'px');
+      root.appendChild(e);
+    }
+  })();
+
+  // hero parallax on scroll
+  (function(){
+    const bg = document.querySelector('.hero-bg');
+    const glow = document.querySelector('.hero-emberglow');
+    if (!bg) return;
+    let raf = null;
+    window.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y < 1200) {
+          bg.style.translate = `0 ${y * 0.25}px`;
+          if (glow) glow.style.translate = `0 ${y * 0.4}px`;
+        }
+        raf = null;
+      });
+    }, { passive: true });
+  })();
+
+  // falling maple leaves over story image
+  (function(){
+    const root = document.getElementById('leaves');
+    if (!root) return;
+    const N = 18;
+    for (let i=0;i<N;i++){
+      const e = document.createElement('span');
+      const left = 30 + Math.random()*70; // bias toward right side (where the tree is)
+      const dur = 8 + Math.random()*8;
+      const delay = -Math.random()*dur;
+      const dx = -40 - Math.random()*120;
+      const scale = 0.7 + Math.random()*0.8;
+      e.style.left = left+'%';
+      e.style.transform = `scale(${scale})`;
+      e.style.animationDuration = dur+'s';
+      e.style.animationDelay = delay+'s';
+      e.style.setProperty('--dx', dx+'px');
+      root.appendChild(e);
+    }
+  })();
+
+  // gameplay tabs
+  (function(){
+    const FEATURES = [
+      { name:"Roam a feudal Japan you can actually live in.", sub:"Eight provinces. Hand-crafted shrines, hidden valleys, and weather that never stops moving.", region:"外 · YAMASHIRO PROVINCE" },
+      { name:"A blade with weight, not a button.", sub:"Iaijutsu, Mizu, and Kage stances. Parry timing measured in heartbeats. Every duel writes its own story.", region:"内 · DUEL · RYŪKAKU PASS" },
+      { name:"The way of shadow.", sub:"Kage-style takedowns, eavesdrops, lantern-snuffs. Walk through a garrison and leave only rumors.", region:"夜 · NIGHT · IRON CASTLE" },
+      { name:"Storms shape every fight.", sub:"Rain dampens steel. Wind moves arrows. The road bends with the weather and so do you.", region:"嵐 · STORM · HOKKAIDŌ COAST" },
+      { name:"Three paths · one blade.", sub:"Honor, Vengeance, or the Wandering road. Each shapes your moveset, allies, and the ending you'll earn.", region:"道 · CROSSROADS · CH. III" },
+    ];
+    const tabs = document.querySelectorAll('#tabs .tab');
+    const fName = document.getElementById('feat-name');
+    const fSub  = document.getElementById('feat-sub');
+    const hudR  = document.getElementById('hud-region');
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('on'));
+      t.classList.add('on');
+      const i = +t.dataset.i;
+      fName.textContent = FEATURES[i].name;
+      fSub.textContent = FEATURES[i].sub;
+      hudR.textContent = FEATURES[i].region;
+    }));
+  })();
+</script>
+
+<div id="tweaks-root"></div>
+<script type="text/babel">
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accent": "#c9362a",
+    "fogIntensity": 0.35
+  }/*EDITMODE-END*/;
+
+  function App() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    React.useEffect(() => {
+      document.documentElement.style.setProperty('--ember', t.accent);
+      // shift glow with hue
+      const glow = t.accent === '#c9362a' ? '#e94b3a'
+                 : t.accent === '#c9a86b' ? '#e0c48a'
+                 : t.accent === '#3a6f8f' ? '#5b94b8'
+                 : t.accent === '#7a2c2c' ? '#a04545'
+                 : '#e94b3a';
+      document.documentElement.style.setProperty('--ember-glow', glow);
+    }, [t.accent]);
+    React.useEffect(() => {
+      const bg = document.querySelector('.hero-bg');
+      if (bg) bg.style.opacity = 0.6 + t.fogIntensity * 0.4;
+    }, [t.fogIntensity]);
+
+    return (
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Accent" />
+        <TweakColor
+          label="Tone"
+          value={t.accent}
+          options={['#c9362a','#7a2c2c','#c9a86b','#3a6f8f']}
+          onChange={(v) => setTweak('accent', v)}
+        />
+        <TweakSection label="Atmosphere" />
+        <TweakSlider
+          label="Fog / rain"
+          value={t.fogIntensity}
+          min={0} max={1} step={0.05}
+          onChange={(v) => setTweak('fogIntensity', v)}
+        />
+      </TweaksPanel>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById('tweaks-root')).render(<App />);
+</script>
+
+</body>
+</html>
